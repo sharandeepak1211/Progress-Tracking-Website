@@ -7,10 +7,24 @@ import Settings from "./pages/Settings";
 import { Toaster } from "react-hot-toast";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TagsManagement from "./pages/TagsManagement";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient();
 
 export function App() {
+	useEffect(() => {
+		if ("serviceWorker" in navigator) {
+			navigator.serviceWorker
+				.register("/service-worker.js")
+				.then((registration) => {
+					console.log("Service Worker registered:", registration);
+				})
+				.catch((error) => {
+					console.error("Service Worker registration failed:", { error });
+				});
+		}
+	}, []);
+
 	return (
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>

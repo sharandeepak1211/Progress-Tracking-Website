@@ -58,7 +58,7 @@ export default function TagsManagement() {
 
 			<form onSubmit={handleCreateTag} className="mb-6">
 				<div className="flex gap-2">
-					<input type="text" value={newTagName} onChange={(e) => setNewTagName(e.target.value)} placeholder="Enter new tag name" className="flex-1 rounded-lg border-gray-300 bg-gray-50 p-2" />
+					<input type="text" value={newTagName} onChange={(e) => setNewTagName(e.target.value)} placeholder="Enter new tag name" className="flex-1 rounded-lg border border-gray-300 bg-gray-50 p-2" />
 					<button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2">
 						<Plus className="w-4 h-4" />
 						Add Tag
