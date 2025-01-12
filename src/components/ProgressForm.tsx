@@ -1,20 +1,24 @@
 import React, { useState } from "react";
-import { Send, Star } from "lucide-react";
+import { Calendar, Send, Star } from "lucide-react";
 import { progressApi } from "../api/progressApi";
 import { useNavigate } from "react-router-dom";
-import { useTags } from "../hooks/useTags";
+import { usePinnedTags } from "../hooks/useTags";
 import { motion } from "framer-motion";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+
 
 export default function ProgressForm() {
 	const navigate = useNavigate();
 	const [formData, setFormData] = useState({
-		satisfaction: 0,
-		activities: "",
-		mistakes: "",
-		tags: [] as string[],
+				satisfaction: 0,
+				activities: "",
+				mistakes: "",
+				tags: [] as string[],
+				date: new Date(),
 	});
 	const [isSubmitting, setIsSubmitting] = useState(false);
-	const { data: tags = [] } = useTags();
+	const { data: tags = [] } = usePinnedTags();
 
 	const handleTagToggle = (tagId: string) => {
 		setFormData((prev) => {
@@ -28,7 +32,10 @@ export default function ProgressForm() {
 		setIsSubmitting(true);
 
 		try {
-			await progressApi.submitProgress(formData);
+			await progressApi.submitProgress({
+				...formData,
+				date: formData.date.toISOString(),
+			});
 			navigate("/trends");
 		} catch (error) {
 			console.error("Failed to submit progress:", error);
@@ -65,11 +72,40 @@ export default function ProgressForm() {
 		</div>
 	);
 
+	const CustomInput = React.forwardRef(({ value, onClick }: { value: string; onClick: () => void }, ref: React.Ref<HTMLButtonElement>) => (
+		<button
+			type="button"
+			className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+			onClick={onClick}
+			ref={ref}
+		>
+			<Calendar className="w-5 h-5" />
+			{value}
+		</button>
+	));
+
 	return (
 		<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl mx-auto">
 			<h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Daily Progress</h2>
 			<form onSubmit={handleSubmit} className="space-y-8">
 				<div className="space-y-6">
+					<div>
+						<label className="block text-lg font-medium text-gray-700 mb-2">
+							Select Date
+						</label>
+						<DatePicker
+							selected={formData.date}
+							onChange={(date: Date | null) => setFormData(prev => ({ ...prev, date: date || new Date() }))}
+							customInput={<CustomInput value="" onClick={() => {}} />}
+							dateFormat="MMMM d, yyyy h:mm aa"
+							showTimeSelect
+							timeFormat="HH:mm"
+							timeInputLabel="Time:"
+							maxDate={new Date()}
+							required
+						/>
+					</div>
+
 					<div>
 						<label className="block text-lg font-medium text-gray-700 mb-2">How satisfied are you with today's progress?</label>
 						<div className="flex items-center justify-center gap-2">{renderStars()}</div>

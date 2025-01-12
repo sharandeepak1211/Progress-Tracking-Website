@@ -1,16 +1,14 @@
 import { collection, addDoc, getDocs, deleteDoc, doc, query, orderBy } from "firebase/firestore";
 import { firestore } from "../config/firebase";
 import { ProgressEntry, ProgressStats } from "../types/progress";
-import axios from "axios";
 import { Tag } from "./tagsApi";
 
 const COLLECTION_NAME = "progressEntries";
 
 export const progressApi = {
-	submitProgress: async (data: Omit<ProgressEntry, "id" | "date">): Promise<ProgressEntry> => {
+	submitProgress: async (data: Omit<ProgressEntry, "id">): Promise<ProgressEntry> => {
 		try {
 			const entry: Omit<ProgressEntry, "id"> = {
-				date: new Date().toISOString(),
 				...data,
 			};
 

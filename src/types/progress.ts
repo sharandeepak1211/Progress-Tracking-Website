@@ -15,3 +15,10 @@ export interface ProgressStats {
 		satisfaction: number;
 	}>;
 }
+
+export interface Tag {
+	id: string;
+	name: string;
+	isPinned: boolean;
+	createdAt: string;
+}

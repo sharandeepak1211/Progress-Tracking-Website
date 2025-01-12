@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, addDoc, getDocs, deleteDoc, doc, query, where, updateDoc } from "firebase/firestore";
 import { firestore } from "../config/firebase";
 
 const COLLECTION_NAME = "tags";
@@ -7,33 +7,49 @@ export interface Tag {
 	id: string;
 	name: string;
 	createdAt: string;
+	isPinned: boolean;
 }
 
 export const tagsApi = {
-	getTags: async () => {
+	getTags: async (pinnedOnly: boolean = false) => {
 		try {
-			const tagsCollection = collection(firestore, "tags");
-			const querySnapshot = await getDocs(tagsCollection);
-			return querySnapshot.docs.map((doc) => ({
+			const tagsRef = collection(firestore, COLLECTION_NAME);
+			const q = pinnedOnly 
+				? query(tagsRef, where('isPinned', '==', true))
+				: tagsRef;
+			
+			const snapshot = await getDocs(q);
+			return snapshot.docs.map(doc => ({
 				id: doc.id,
 				...doc.data(),
 			})) as Tag[];
 		} catch (error) {
-			throw new Error(`Failed to fetch tags: ${error}`);
+			console.error('Error fetching tags:', error);
+			return [];
 		}
 	},
 
-	createTag: async (name: string): Promise<Tag> => {
+	createTag: async (name: string, isPinned: boolean = false): Promise<Tag> => {
 		try {
 			const tag: Omit<Tag, "id"> = {
 				name,
 				createdAt: new Date().toISOString(),
+				isPinned,
 			};
 
 			const docRef = await addDoc(collection(firestore, COLLECTION_NAME), tag);
 			return { id: docRef.id, ...tag };
 		} catch (error) {
 			throw new Error(`Failed to create tag: ${error}`);
+		}
+	},
+
+	updateTag: async (id: string, tag: Partial<Tag>): Promise<Tag> => {
+		try {
+			await updateDoc(doc(firestore, COLLECTION_NAME, id), tag);
+			return { id, ...tag } as Tag;
+		} catch (error) {
+			throw new Error(`Failed to update tag: ${error}`);
 		}
 	},
 

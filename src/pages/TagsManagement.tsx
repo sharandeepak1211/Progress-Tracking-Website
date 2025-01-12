@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { Plus, X } from "lucide-react";
+import { Pin, Plus, X } from "lucide-react";
 import { tagsApi } from "../api/tagsApi";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { motion } from "framer-motion";
 
 export default function TagsManagement() {
 	const queryClient = useQueryClient();
@@ -23,8 +24,19 @@ export default function TagsManagement() {
 
 	const { data: tags = [], isLoading } = useQuery({
 		queryKey: ["tags"],
-		queryFn: tagsApi.getTags,
+		queryFn: () => tagsApi.getTags(false),
 	});
+
+	const handleTogglePin = async (tagId: string, isPinned: boolean) => {
+		try {
+			const updatedTag = await tagsApi.updateTag(tagId, { isPinned: !isPinned });
+			console.log(updatedTag);
+			queryClient.invalidateQueries({ queryKey: ["tags"] });
+		} catch (error) {
+			setError("Failed to toggle pin");
+			console.error(error);
+		}
+	};
 
 	const handleCreateTag = async (e: React.FormEvent) => {
 		try {
@@ -73,9 +85,23 @@ export default function TagsManagement() {
 					{tags.map((tag) => (
 						<div key={tag.id} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg">
 							<span>{tag.name}</span>
-							<button onClick={() => handleDeleteTag(tag.id)} className="text-red-600 hover:text-red-800">
-								<X className="w-5 h-5" />
-							</button>
+							<div className="flex items-center gap-2">
+								<motion.button
+									type="button"
+									onClick={() => {
+										handleTogglePin(tag.id, tag.isPinned);
+									}}
+									whileHover={{ scale: 1.1 }}
+									whileTap={{ scale: 0.9 }}
+									className={`focus:outline-none ${tag.isPinned ? "text-indigo-600" : "text-gray-300"}`}
+									aria-label={`Rate ${tag.isPinned ? "pinned" : "unpinned"}`}
+								>
+									<Pin className="w-4 h-4" fill={tag.isPinned ? "currentColor" : "none"} />
+								</motion.button>
+								<button onClick={() => handleDeleteTag(tag.id)} className="text-red-600 hover:text-red-800">
+									<X className="w-5 h-5" />
+								</button>
+							</div>
 						</div>
 					))}
 				</div>

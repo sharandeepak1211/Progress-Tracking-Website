@@ -1,9 +1,8 @@
-import React from "react";
 import { progressApi } from "../api/progressApi";
 import { Star, Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useTags } from "../hooks/useTags";
+import { useAllTags } from "../hooks/useTags";
 
 export default function HistoryPage() {
 	const queryClient = useQueryClient();
@@ -13,7 +12,7 @@ export default function HistoryPage() {
 		queryFn: progressApi.getEntries,
 	});
 
-	const { data: tags = [], isLoading: tagsLoading } = useTags();
+	const { data: tags = [], isLoading: tagsLoading } = useAllTags();
 
 	const deleteMutation = useMutation({
 		mutationFn: progressApi.deleteEntry,
